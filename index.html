@@ -115,8 +115,8 @@ Pointer :   ^
 					<div class="col half">
 
 						<h3>Brainfuck output:</h3>
-						<textarea class="editor" id="bf-output"></textarea>																		
-		        
+						<textarea class="editor" readonly id="bf-output"></textarea>																		
+		        		<h4 id="timing"></h4>
 
 
 
@@ -130,20 +130,26 @@ Pointer :   ^
 			</div>
 		</section>
 		<script src="Najtingalo.js"></script>
+		<script src="md5.js"></script>
 		<script>
             var bfHeap = [];
+            var cache = {};
             document.querySelector('#run').addEventListener('click', function() {
                 'use strict';
                 bfHeap.length = 0;
-                var func = eval('(' + document.querySelector('#js-code').value + ')');
+                var hash = md5(document.querySelector('#js-code').value);
+                var func = cache[hash] || eval('(' + document.querySelector('#js-code').value + ')');
+                document.querySelector('#bf-output').value = '';
+                var t0 = (window.performance || Date).now();
                 func(bfHeap, function output(character) {
                     document.querySelector('#bf-output').value += '' + character;
-
                 }, function input() {
                     var firstChar = document.querySelector('#bf-input').value[0];
                     document.querySelector('#bf-input').value = String(document.querySelectorAll('#bf-input')).value.slice(1);
                     return firstChar;
                 });
+                var t1 = (window.performance || Date).now();
+                document.querySelector('#timing').textContent = 'Took '+(window.performance ? '': 'less than')+(t1-t0)+' miliseconds.';
             });
             document.querySelector('#compile').addEventListener('click', function() {
                 var bfCode = document.querySelector('#bf-code').value;
