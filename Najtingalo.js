@@ -49,7 +49,7 @@
 
         BF_Init.prototype = createPrototype(BF_Init, BF_Node);
         BF_Init.prototype.toString = function() {
-            return '\n var pointer = 0; ' + commented(this.comments);
+            return 'heap = heap || []; \n var pointer = 0; ' + commented(this.comments);
         };
         function BF_NullNode() {
 
@@ -68,7 +68,7 @@
 
         }
 
-
+        BF_Right.character = '>';
         BF_Right.prototype = createPrototype(BF_Left, BF_Node);
         BF_Right.prototype.toString = function() {
             return 'pointer = (pointer + '+this.by+')|0; ' + this.getComments();
@@ -88,24 +88,25 @@
         function BF_Inc() {
 
         }
-
+        BF_Left.prototype.character = '<';
 
         BF_Inc.prototype = createPrototype(BF_Inc, BF_Node);
         BF_Inc.prototype.toString = function() {
             return 'heap[pointer|0] = (heap[pointer]|0)+'+this.by+';' + this.getComments();
         };
         BF_Inc.prototype.by = 1;
+        BF_Inc.prototype.character = '<';
         function BF_Dec() {
 
         }
-
+        
 
         BF_Dec.prototype = createPrototype(BF_Dec, BF_Node);
         BF_Dec.prototype.toString = function() {
             return 'heap[pointer|0] = (heap[pointer]|0)-'+this.by+';' + this.getComments();
         };
         BF_Dec.prototype.by = 1;
-        
+        BF_Inc.prototype.character = '-';
         function BF_Output() {
 
         }
@@ -115,7 +116,7 @@
         BF_Output.prototype.toString = function() {
             return 'print(String.fromCharCode(heap[pointer]|0));' + this.getComments();
         };
-
+        BF_Output.prototype.character = '.';
         function BF_Input() {
 
         }
@@ -125,7 +126,7 @@
         BF_Input.prototype.toString = function() {
             return 'heap[pointer] = getInput();' + this.getComments();
         };
-
+        BF_Input.prototype.character = ',';
         function BF_LoopStart() {
 
         }
@@ -135,7 +136,7 @@
         BF_LoopStart.prototype.toString = function() {
             return 'while(heap[pointer]) { ' + this.getComments();
         };
-        
+        BF_LoopStart.prototype.character = '[';
         function BF_LoopEnd() {
 
         }
@@ -145,7 +146,7 @@
         BF_LoopEnd.prototype.toString = function() {
             return '}' + this.getComments();
         };
-
+        BF_LoopStart.prototype.character = ']';
         function BF_FullLoop() {
 
         }
@@ -187,7 +188,7 @@
         };
         
         Najtingalo.optimise = function(tokensList, level) {
-            if (level === 0)
+            if (!level)
                 return tokensList;
             var clonedTokens = tokensList.slice(0);
             var newTokens;
