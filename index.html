@@ -13,27 +13,38 @@
 	</head>
 
 	<body>
-<a href="https://github.com/ginden/Najtingalo">
-	<img style="position: absolute; top: 0; right: 0; border: 0;"
-	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+		<a href="https://github.com/ginden/Najtingalo"> <img style="position: absolute; top: 0; right: 0; border: 0;"
+		src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
 		<section class="header">
-		  <div class="container txt-center">
-		      
-		     <h1><a href="http://ginden.github.io/Najtingalo">Najtingalo</a></h1>
-		    
-		     <button class="btn" id="compile" type="button">Compile BrainFuck</button>
-		     <button class="btn" id="run">Run</button>
-		     <button class="btn" id="clear">Clear all</button>
-		  </div>
+			<div class="container txt-center">
+
+				<h1><a href="http://ginden.github.io/Najtingalo">Najtingalo</a></h1>
+
+				<button class="btn" id="compile" type="button">
+					Compile BrainFuck
+				</button>
+				<button class="btn" id="compile-1" type="button">
+					Compile BrainFuck (simple optimisations)
+				</button>
+				<button class="btn" id="run">
+					Run
+				</button>
+				<button class="btn" id="inspect-memory">
+					Inspect memory
+				</button>
+				<button class="btn" id="clear">
+					Clear all
+				</button>
+			</div>
 		</section>
-		
+
 		<section>
-		  <div class="container">
-		    <div class="row">
-		      <div class="col half">
-		        
-		        <h3>Brainfuck code:</h3>
-		        <textarea class="editor" id="bf-code">
+			<div class="container">
+				<div class="row">
+					<div class="col half">
+
+						<h3>Brainfuck code:</h3>
+						<textarea class="editor" id="bf-code">
 [ This program prints "Hello World!" and a newline to the screen, its
   length is 106 active command characters [it is not the shortest.]
  
@@ -75,56 +86,146 @@ Pointer :   ^
 +++.------.--------.    Cell #3 for 'rl' and 'd'
 >>+.                    Add 1 to Cell #5 gives us an exclamation point
 >++.                    And finally a newline from Cell #6
-		        </textarea>
+		        </textarea>																		
 		        
-		      </div>
-		      <div class="col half">
+
+
+
+					</div>
+					<div class="col half">
+
+						<h3>Equivalent JS code:</h3>
+						<textarea class="editor" id="js-code"></textarea>																		
 		        
-		        <h3>Equivalent JS code:</h3>
-		        <textarea class="editor" id="js-code"></textarea>
+
+
+
+					</div>
+				</div>
+				<div class="row">
+					<div class="col half">
+
+						<h3>Brainfuck input:</h3>
+						<textarea class="editor" id="bf-input"></textarea>																		
 		        
-		      </div>
-		    </div>
-		    <div class="row">
-		      <div class="col half">
+
+
+
+					</div>
+					<div class="col half">
+
+						<h3>Brainfuck output:</h3>
+						<textarea class="editor" id="bf-output"></textarea>																		
 		        
-		        <h3>Brainfuck input:</h3>
-		        <textarea class="editor" id="bf-input"></textarea>
-		        
-		      </div>
-		      <div class="col half">
-		        
-		        <h3>Brainfuck output:</h3>
-		        <textarea class="editor" id="bf-output"></textarea>
-		        
-		      </div>
-		    </div>
-		  </div>
+
+
+
+					</div>
+				</div>
+				<div class="row">
+					<div class="memory-viewer">
+
+					</div>
+				</div>
+			</div>
 		</section>
 		<script src="Najtingalo.js"></script>
 		<script>
-			window.bfHeap = [];
-			document.querySelector('#run').addEventListener('click', function(){
-				'use strict';
-				window.bfHeap.length = 0;
-				var func = eval('('+document.querySelector('#js-code').value+')');
-				func(window.bfHeap, function output(character){
-					document.querySelectorAll('bf-output').value += ''+character;
-				}, function input() {
-					var firstChar = document.querySelectorAll('bf-input').value[0];
-					document.querySelectorAll('bf-input').value = document.querySelectorAll('bf-input').value.slice(1);
-					return firstChar;
-				});
-			});
-			document.querySelector('#compile').addEventListener('click', function(){
-				var bfCode = document.querySelector('#bf-code').value;
-				var compiledFunc = Najtingalo.toRunnable(bfCode).toString();
-				document.querySelector('#js-code').value = compiledFunc;
-				return false;
-			});
-			document.querySelector('#clear').addEventListener('click', function(){
-				[].forEach.call(document.querySelectorAll('textarea'), function(el){el.value='';});
-			});
+            var bfHeap = [];
+            document.querySelector('#run').addEventListener('click', function() {
+                'use strict';
+                bfHeap.length = 0;
+                var func = eval('(' + document.querySelector('#js-code').value + ')');
+                func(bfHeap, function output(character) {
+                    document.querySelector('#bf-output').value += '' + character;
+
+                }, function input() {
+                    var firstChar = document.querySelector('#bf-input').value[0];
+                    document.querySelector('#bf-input').value = String(document.querySelectorAll('#bf-input')).value.slice(1);
+                    return firstChar;
+                });
+            });
+            document.querySelector('#compile').addEventListener('click', function() {
+                var bfCode = document.querySelector('#bf-code').value;
+                var compiledFunc = Najtingalo.toRunnable(bfCode, 0).toString();
+                document.querySelector('#js-code').value = compiledFunc;
+                return false;
+            });
+            document.querySelector('#compile-1').addEventListener('click', function() {
+                var bfCode = document.querySelector('#bf-code').value;
+                var compiledFunc = Najtingalo.toRunnable(bfCode, 1).toString();
+                document.querySelector('#js-code').value = compiledFunc;
+                return false;
+            });
+            document.querySelector('#clear').addEventListener('click', function() {
+                [].forEach.call(document.querySelectorAll('textarea'), function(el) {
+                    el.value = '';
+                });
+            });
+            function indentWithZerosTo(str, len) {
+                return '0'.repeat(Math.max(0, len - str.length)) + str;
+            }
+
+
+            document.querySelector('#inspect-memory').addEventListener('click', function() {
+                var container = document.querySelector('.memory-viewer');
+                var reference = document.createElement('span');
+                reference.setAttribute('class', 'cell');
+
+                var nodesFragment = document.createDocumentFragment();
+                var title = document.createElement('h3');
+                title.textContent = "Memory view:";
+                nodesFragment.appendChild(title);
+                nodesFragment = bfHeap.map(function(el, i) {
+                    var newNode = reference.cloneNode(true);
+                    newNode.textContent = el;
+                    newNode.setAttribute('title', 'Cell: 0x' + indentWithZerosTo(i.toString(16), 8));
+                    return newNode;
+                }).reduce(function(fragment, node) {
+                    fragment.appendChild(node);
+                    return fragment;
+                }, nodesFragment);
+                container.innerHTML = '';
+                container.appendChild(nodesFragment);
+            });
+
+            if (!String.prototype.repeat) {
+                String.prototype.repeat = function(count) {
+                    "use strict";
+                    if (this == null)
+                        throw new TypeError("can't convert " + this + " to object");
+                    var str = "" + this;
+                    count = +count;
+                    if (count != count)
+                        count = 0;
+                    if (count < 0)
+                        throw new RangeError("repeat count must be non-negative");
+                    if (count == Infinity)
+                        throw new RangeError("repeat count must be less than infinity");
+                    count = Math.floor(count);
+                    if (str.length == 0 || count == 0)
+                        return "";
+                    // Ensuring count is a 31-bit integer allows us to heavily optimize the
+                    // main part. But anyway, most current (august 2014) browsers can't handle
+                    // strings 1 << 28 chars or longer, so :
+                    if (str.length * count >= 1 << 28)
+                        throw new RangeError("repeat count must not overflow maximum string size");
+                    var rpt = "";
+                    for (; ; ) {
+                        if ((count & 1) == 1)
+                            rpt += str;
+                        count >>>= 1;
+                        if (count == 0)
+                            break;
+                        str += str;
+                    }
+                    return rpt;
+                }
+            }
+
+            [].forEach.call(document.querySelectorAll('#js-code, #bf-input, #bf-output'), function(el) {
+                el.value = '';
+            })
 		</script>
 	</body>
 </html>
