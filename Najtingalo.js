@@ -147,12 +147,22 @@
             return '}' + this.getComments();
         };
         BF_LoopStart.prototype.character = ']';
+        
+        
         function BF_FullLoop() {
 
         }
         BF_FullLoop.prototype = createPrototype(BF_FullLoop, BF_Node);
         BF_FullLoop.prototype.toString = function() {
             return BF_LoopStart.prototype.toString.call(this)+this.instructions.join('\n')+BF_LoopEnd.prototype.toString.call(this);
+        };
+
+        function BF_ResetCurrentCell() {
+            
+        }
+        BF_FullLoop.prototype = createPrototype(BF_ResetCurrentCell, BF_Node);
+        BF_FullLoop.prototype.toString = function() {
+            return 'heap[pointer] = 0; '+this.getComments();
         };
 
 
@@ -199,16 +209,28 @@
                     if (nextEl.constructor === el.constructor && el.by !== undefined) {
                         nextEl.comments = el.comments+'\n'+nextEl.comments;
                         nextEl.by += el.by;
-                        el.by = null;
+                        el.toRemove = true;
                     }
                     return el;
                 }).filter(function(el) {
-                    return el.by !== null;
+                    return !el.toRemove;
                 });
             }
-            /* outline */
             if (level >= 2) {
-                
+                newTokens = clonedTokens.map(function(el, i, arr) {
+                    var nextEl = arr[i+1] || new BF_NullNode();
+                    var prevEl = arr[i-1] || new BF_NullNode();
+                    if (nextEl instanceof BF_LoopEnd && prevEl instanceof BF_LoopStart && el instanceof BF_Dec && el.by === 1) {
+                        nextEl.toRemove = true;
+                        prevEl.toRemove = true;
+                        var ret = new BF_ResetCurrentCell();
+                        ret.comments = [prevEl.comments, el.comments, nextEl.comments].join('\n').trim();
+                        return ret;
+                    }
+                    return el;
+                }).filter(function(el) {
+                    return !el.toRemove;
+                });
             }
             return newTokens;
         };
