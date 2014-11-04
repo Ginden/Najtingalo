@@ -1,0 +1,26 @@
+{
+  "name": "Najtingalo",
+  "version": "0.1.0",
+  "description": "Najtingalo (esperanto: nightingale) is a Brainfuck to JavaScript optimising transcompiler.",
+  "main": "Najtingalo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ginden/Najtingalo.git"
+  },
+  "keywords": [
+    "brainfuck",
+    "JIT",
+    "interpreter",
+    "transpiler",
+    "compiler"
+  ],
+  "author": "Michał \"Ginden\" Wadas",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ginden/Najtingalo/issues"
+  },
+  "homepage": "https://github.com/Ginden/Najtingalo"
+}
