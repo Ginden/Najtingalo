@@ -49,7 +49,7 @@
 
         BF_Init.prototype = createPrototype(BF_Init, BF_Node);
         BF_Init.prototype.toString = function() {
-            return '\n var pointer = 0; ' + commented(this.comments);
+            return 'heap = heap || []; \n var pointer = 0; ' + commented(this.comments);
         };
         function BF_NullNode() {
 
@@ -188,7 +188,7 @@
         };
         
         Najtingalo.optimise = function(tokensList, level) {
-            if (level === 0)
+            if (!level)
                 return tokensList;
             var clonedTokens = tokensList.slice(0);
             var newTokens;
