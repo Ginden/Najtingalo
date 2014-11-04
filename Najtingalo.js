@@ -49,7 +49,7 @@
 
         BF_Init.prototype = createPrototype(BF_Init, BF_Node);
         BF_Init.prototype.toString = function() {
-            return 'var heap = [];\n var pointer = 0;\n' + commented(this.comments);
+            return '\n var pointer = 0;\n' + commented(this.comments);
         };
         function BF_NullNode() {
 
@@ -174,7 +174,7 @@
         };
         Najtingalo.toRunnable = function(string) {
             var tokens = Najtingalo.parseTokens(string);
-            return Function('print', 'getInput', tokens.join('\n'));
+            return Function('heap', 'print', 'getInput', 'export', tokens.join('\n'));
         };
         Najtingalo.isValid = function validateBF(string) {
             var i1 = 0;
