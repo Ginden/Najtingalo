@@ -11,3 +11,4 @@ Converts `bf_code` string to function with signature: `function bf_code(heap=[] 
 
 ### Demo
 http://ginden.github.io/Najtingalo/
+
