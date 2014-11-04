@@ -8,7 +8,7 @@
 		<meta name="author" content="Ginden">
 
 		<meta name="viewport" content="width=device-width; initial-scale=1.0">
-
+		<link rel="stylesheet" href="slowik.css" type="text/css" media="screen" title="no title" charset="utf-8"/>
 
 	</head>
 
@@ -21,7 +21,7 @@
 		      
 		     <h1><a href="http://ginden.github.io/Najtingalo">Najtingalo</a></h1>
 		    
-		     <button class="btn" id="transform" type="button">Compile BrainFuck</button>
+		     <button class="btn" id="compile" type="button">Compile BrainFuck</button>
 		     <button class="btn" id="run">Run</button>
 		     <button class="btn" id="clear">Clear all</button>
 		  </div>
@@ -112,7 +112,7 @@ Pointer :   ^
 					var firstChar = document.querySelectorAll('bf-input').value[0];
 					document.querySelectorAll('bf-input').value = document.querySelectorAll('bf-input').value.slice(1);
 					return firstChar;
-				})
+				});
 			});
 			document.querySelector('#compile').addEventListener('click', function(){
 				var bfCode = document.querySelector('#clear').value;
