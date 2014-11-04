@@ -26,7 +26,7 @@
         }
 
         function commented(string) {
-            return '\n/*' + string + '*/\n';
+            return string === '' ? '': '\n/*' + string + '*/\n';
         }
 
         function BF_Node() {
@@ -133,6 +133,7 @@
         BF_LoopStart.prototype.toString = function() {
             return 'while(heap[pointer]) { ' + this.getComments();
         };
+        
         function BF_LoopEnd() {
 
         }
