@@ -26,7 +26,7 @@
         }
 
         function commented(string) {
-            return string.trim() === '' ? '': '\n/*' + string + '*/\n';
+            return string.trim() === '' ? '': '\n/*' + string.trim() + '*/\n';
         }
 
         function BF_Node() {
