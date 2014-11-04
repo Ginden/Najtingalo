@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<title>Najtingalo</title>
+		<meta name="description" content="">
+		<meta name="author" content="Ginden">
+
+		<meta name="viewport" content="width=device-width; initial-scale=1.0">
+
+
+	</head>
+
+	<body>
+<a href="https://github.com/ginden/Najtingalo">
+	<img style="position: absolute; top: 0; right: 0; border: 0;"
+	src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+		<section class="header">
+		  <div class="container txt-center">
+		      
+		     <h1><a href="http://ginden.github.io/Najtingalo">Najtingalo</a></h1>
+		    
+		     <button class="btn" id="transform" type="button">Compile BrainFuck</button>
+		     <button class="btn" id="run">Run</button>
+		     <button class="btn" id="clear">Clear all</button>
+		  </div>
+		</section>
+		
+		<section>
+		  <div class="container">
+		    <div class="row">
+		      <div class="col half">
+		        
+		        <h3>Brainfuck code:</h3>
+		        <textarea class="editor" id="input">
+[ This program prints "Hello World!" and a newline to the screen, its
+  length is 106 active command characters [it is not the shortest.]
+ 
+  This loop is a "comment loop", it's a simple way of adding a comment
+  to a BF program such that you don't have to worry about any command
+  characters. Any ".", ",", "+", "-", "<" and ">" characters are simply
+  ignored, the "[" and "]" characters just have to be balanced.
+]
++++++ +++               Set Cell #0 to 8
+[
+    >++++               Add 4 to Cell #1; this will always set Cell #1 to 4
+    [                   as the cell will be cleared by the loop
+        >++             Add 2 to Cell #2
+        >+++            Add 3 to Cell #3
+        >+++            Add 3 to Cell #4
+        >+              Add 1 to Cell #5
+        <<<<-           Decrement the loop counter in Cell #1
+    ]                   Loop till Cell #1 is zero; number of iterations is 4
+    >+                  Add 1 to Cell #2
+    >+                  Add 1 to Cell #3
+    >-                  Subtract 1 from Cell #4
+    >>+                 Add 1 to Cell #6
+    [<]                 Move back to the first zero cell you find; this will
+                        be Cell #1 which was cleared by the previous loop
+    <-                  Decrement the loop Counter in Cell #0
+]                       Loop till Cell #0 is zero; number of iterations is 8
+ 
+The result of this is:
+Cell No :   0   1   2   3   4   5   6
+Contents:   0   0  72 104  88  32   8
+Pointer :   ^
+ 
+>>.                     Cell #2 has value 72 which is 'H'
+>---.                   Subtract 3 from Cell #3 to get 101 which is 'e'
++++++++..+++.           Likewise for 'llo' from Cell #3
+>>.                     Cell #5 is 32 for the space
+<-.                     Subtract 1 from Cell #4 for 87 to give a 'W'
+<.                      Cell #3 was set to 'o' from the end of 'Hello'
++++.------.--------.    Cell #3 for 'rl' and 'd'
+>>+.                    Add 1 to Cell #5 gives us an exclamation point
+>++.                    And finally a newline from Cell #6
+		        </textarea>
+		        
+		      </div>
+		      <div class="col half">
+		        
+		        <h3>Equivalent JS code:</h3>
+		        <textarea class="editor" id="js-code"></textarea>
+		        
+		      </div>
+		    </div>
+		    <div class="row">
+		      <div class="col half">
+		        
+		        <h3>Brainfuck input:</h3>
+		        <textarea class="editor" id="bf-input"></textarea>
+		        
+		      </div>
+		      <div class="col half">
+		        
+		        <h3>Brainfuck output:</h3>
+		        <textarea class="editor" id="bf-output"></textarea>
+		        
+		      </div>
+		    </div>
+		  </div>
+		</section>
+		<script src="Najtingalo.js"></script>
+		<script>
+			document.querySelector('#run').addEventListener('click', function(){
+				'use strict';
+				var func = eval('('+document.querySelector('#js-code').value+')');
+				func(function output(character){
+					document.querySelectorAll('bf-output').value += ''+character;
+				}, function input() {
+					var firstChar = document.querySelectorAll('bf-input').value[0];
+					document.querySelectorAll('bf-input').value = document.querySelectorAll('bf-input').value.slice(1);
+					return firstChar;
+				})
+			});
+			document.querySelector('#compile').addEventListener('click', function(){
+				var bfCode = document.querySelector('#clear').value;
+				var compiledFunc = Najtingalo.toRunnable(bfCode).toString();
+				document.querySelector('#js-code').value = compiledFunc;
+				return false;
+			});
+			document.querySelector('#clear').addEventListener('click', function(){
+				[].forEach.call(document.querySelectorAll('textarea'), function(el){el.value='';});
+			});
+		</script>
+	</body>
+</html>
