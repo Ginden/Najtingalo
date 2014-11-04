@@ -33,7 +33,7 @@
 		      <div class="col half">
 		        
 		        <h3>Brainfuck code:</h3>
-		        <textarea class="editor" id="input">
+		        <textarea class="editor" id="bf-code">
 [ This program prints "Hello World!" and a newline to the screen, its
   length is 106 active command characters [it is not the shortest.]
  
@@ -103,10 +103,12 @@ Pointer :   ^
 		</section>
 		<script src="Najtingalo.js"></script>
 		<script>
+			window.bfHeap = [];
 			document.querySelector('#run').addEventListener('click', function(){
 				'use strict';
+				window.bfHeap.length = 0;
 				var func = eval('('+document.querySelector('#js-code').value+')');
-				func(function output(character){
+				func(window.bfHeap, function output(character){
 					document.querySelectorAll('bf-output').value += ''+character;
 				}, function input() {
 					var firstChar = document.querySelectorAll('bf-input').value[0];
