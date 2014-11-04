@@ -115,7 +115,7 @@ Pointer :   ^
 				});
 			});
 			document.querySelector('#compile').addEventListener('click', function(){
-				var bfCode = document.querySelector('#clear').value;
+				var bfCode = document.querySelector('#bf-code').value;
 				var compiledFunc = Najtingalo.toRunnable(bfCode).toString();
 				document.querySelector('#js-code').value = compiledFunc;
 				return false;
