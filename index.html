@@ -139,6 +139,9 @@ Pointer :   ^
                 bfHeap.length = 0;
                 var hash = md5(document.querySelector('#js-code').value);
                 var func = cache[hash] || eval('(' + document.querySelector('#js-code').value + ')');
+                if (!cache[hash]) {
+                	cache[hash] = func;
+                }
                 document.querySelector('#bf-output').value = '';
                 var t0 = (window.performance || Date).now();
                 func(bfHeap, function output(character) {
