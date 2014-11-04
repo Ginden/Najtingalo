@@ -49,7 +49,7 @@
 
         BF_Init.prototype = createPrototype(BF_Init, BF_Node);
         BF_Init.prototype.toString = function() {
-            return '\n var pointer = 0;\n' + commented(this.comments);
+            return '\n var pointer = 0; ' + commented(this.comments);
         };
         function BF_NullNode() {
 
@@ -71,7 +71,7 @@
 
         BF_Right.prototype = createPrototype(BF_Left, BF_Node);
         BF_Right.prototype.toString = function() {
-            return 'pointer = (pointer + '+this.by+')|0;' + this.getComments();
+            return 'pointer = (pointer + '+this.by+')|0; ' + this.getComments();
         };
         BF_Right.prototype.by = 1;
         
@@ -82,7 +82,7 @@
 
         BF_Left.prototype = createPrototype(BF_Left, BF_Node);
         BF_Left.prototype.toString = function() {
-            return 'pointer = (pointer -'+this.by+')|0;' + this.getComments();
+            return 'pointer = (pointer -'+this.by+')|0; ' + this.getComments();
         };
         BF_Left.prototype.by = 1;
         function BF_Inc() {
