@@ -17,7 +17,6 @@
 		src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
 		<section class="header">
 			<div class="container txt-center">
-
 				<h1><a href="http://ginden.github.io/Najtingalo">Najtingalo</a></h1>
 
 				<button class="btn" id="compile" type="button">
@@ -29,6 +28,9 @@
 				<button class="btn" id="run">
 					Run
 				</button>
+				<button class="btn" id="run-in-worker">
+					Compile &amp; run in worker
+				</button>
 				<button class="btn" id="inspect-memory">
 					Inspect memory
 				</button>
@@ -37,7 +39,7 @@
 				</button>
 			</div>
 		</section>
-
+		
 		<section>
 			<div class="container">
 				<div class="row">
@@ -78,10 +80,11 @@ Pointer :   ^
 +++.------.--------.    Cell #3 for 'rl' and 'd'
 >>+.                    Add 1 to Cell #5 gives us an exclamation point
 >++.                    And finally a newline from Cell #6
-		        </textarea>																		
-		        
-
-
+		        </textarea>		
+		        <h4>Examples</h4>															
+		        <button class="btn getCode" data-url="examples/triangle.txt">triangle.bf</button>
+				<button class="btn getCode" data-url="examples/quine3.txt">quine3.bf</button>
+				<button class="btn getCode" data-url="examples/quine3.txt">quine1.bf</button>
 
 					</div>
 					<div class="col half">
@@ -126,9 +129,17 @@ Pointer :   ^
 		<script>
             var bfHeap = [];
             var cache = {};
+            function resetArray(arr) {
+            	if (arr instanceof Array)
+            		arr.length = 0;
+            	else {
+            		for(var i=0;i < arr.length; i++)
+            			arr[i] = 0;
+            	}
+            }
             document.querySelector('#run').addEventListener('click', function() {
                 'use strict';
-                bfHeap.length = 0;
+                resetArray(bfHeap);
                 var hash = md5(document.querySelector('#js-code').value);
                 var func = cache[hash] || eval('(' + document.querySelector('#js-code').value + ')');
                 if (!cache[hash]) {
@@ -136,13 +147,16 @@ Pointer :   ^
                 }
                 document.querySelector('#bf-output').value = '';
                 var t0 = (window.performance || Date).now();
+                var myOutput = [];
                 func(bfHeap, function output(character) {
-                    document.querySelector('#bf-output').value += '' + character;
+                    myOutput.push(character);
+                    
                 }, function input() {
                     var firstChar = document.querySelector('#bf-input').value[0];
                     document.querySelector('#bf-input').value = String(document.querySelectorAll('#bf-input')).value.slice(1);
                     return firstChar;
                 });
+                document.querySelector('#bf-output').value = myOutput.join('');
                 var t1 = (window.performance || Date).now();
                 document.querySelector('#timing').textContent = 'Took '+(window.performance ? '': 'less than')+(t1-t0)+' miliseconds.';
             });
@@ -154,7 +168,7 @@ Pointer :   ^
             });
             document.querySelector('#compile-1').addEventListener('click', function() {
                 var bfCode = document.querySelector('#bf-code').value;
-                var compiledFunc = Najtingalo.toRunnable(bfCode, 1).toString();
+                var compiledFunc = Najtingalo.toRunnable(bfCode, 3).toString();
                 document.querySelector('#js-code').value = compiledFunc;
                 return false;
             });
@@ -189,7 +203,16 @@ Pointer :   ^
                 container.innerHTML = '';
                 container.appendChild(nodesFragment);
             });
-
+			function loadCodeFromUrl(){
+				var url = this.getAttribute('data-url');
+				var iframe = document.createElement('iframe');
+				iframe.onload = function(e) {
+					document.body.removeChild(iframe);
+				};
+				iframe.src = url;
+				iframe.setAttribute('style', 'display: none;');
+				document.body.appendChild(iframe);
+			}
             if (!String.prototype.repeat) {
                 String.prototype.repeat = function(count) {
                     "use strict";
@@ -226,7 +249,10 @@ Pointer :   ^
 
             [].forEach.call(document.querySelectorAll('#js-code, #bf-input, #bf-output'), function(el) {
                 el.value = '';
-            })
+            });
+            [].forEach.call(document.querySelectorAll('.getCode'), function(el){
+            	el.addEventListener('click', loadCodeFromUrl);
+            });
 		</script>
 	</body>
 </html>
