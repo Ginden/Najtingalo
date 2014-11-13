@@ -22,15 +22,30 @@
 				<button class="btn" id="compile" type="button">
 					Compile BrainFuck
 				</button>
-				<button class="btn" id="compile-1" type="button">
-					Compile BrainFuck (simple optimisations)
-				</button>
+				<h3>Maximal optimisation level</h3>
+				<select style="color: black" id="optimisation">
+					<option value="0">
+						None
+					</option>
+					<option value="1">
+						Join operators
+					</option>
+					<option value="2">
+						Fast reset cell
+					</option>
+					<!--<option value="3">
+						Simple loop optimisation
+					</option>-->
+				</select>
+				<br>
 				<button class="btn" id="run">
 					Run
 				</button>
+				<!--
 				<button class="btn" id="run-in-worker">
 					Compile &amp; run in worker
 				</button>
+				-->
 				<button class="btn" id="inspect-memory">
 					Inspect memory
 				</button>
@@ -132,10 +147,11 @@ Pointer :   ^
             function resetArray(arr) {
             	if (arr instanceof Array)
             		arr.length = 0;
-            	else {
+            	else { // Typed Array or proxy or something
             		for(var i=0;i < arr.length; i++)
             			arr[i] = 0;
             	}
+            	return arr;
             }
             document.querySelector('#run').addEventListener('click', function() {
                 'use strict';
@@ -162,13 +178,9 @@ Pointer :   ^
             });
             document.querySelector('#compile').addEventListener('click', function() {
                 var bfCode = document.querySelector('#bf-code').value;
-                var compiledFunc = Najtingalo.toRunnable(bfCode, 0).toString();
-                document.querySelector('#js-code').value = compiledFunc;
-                return false;
-            });
-            document.querySelector('#compile-1').addEventListener('click', function() {
-                var bfCode = document.querySelector('#bf-code').value;
-                var compiledFunc = Najtingalo.toRunnable(bfCode, 3).toString();
+                var optimisationLevel = 0;
+                optimisationLevel = Number(document.querySelector('#optimisation').selectedOptions[0].getAttribute('value')) || 0;
+                var compiledFunc = Najtingalo.toRunnable(bfCode, optimisationLevel).toString();
                 document.querySelector('#js-code').value = compiledFunc;
                 return false;
             });
@@ -253,6 +265,15 @@ Pointer :   ^
             [].forEach.call(document.querySelectorAll('.getCode'), function(el){
             	el.addEventListener('click', loadCodeFromUrl);
             });
+            var log = [];
+            console.log = (function(oldLog){
+            	
+            	return function(){
+            		log.push(arguments);
+            		return oldLog.call(null,arguments);
+            	};
+            })(console.log.bind(console));
+            
 		</script>
 	</body>
 </html>
