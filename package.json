@@ -1,6 +1,6 @@
 {
   "name": "najtingalo",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Najtingalo (esperanto: nightingale) is a Brainfuck to JavaScript optimising transcompiler.",
   "main": "Najtingalo.js",
   "scripts": {
