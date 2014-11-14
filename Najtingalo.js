@@ -46,6 +46,17 @@
         BF_Node.prototype.getComments = function() {
             return commented(this.comments);
         };
+        
+        BF_Node.prototype.expand = function(){
+            return this._expand || this;
+        };
+        
+        function BF_NodeGroup(){
+            
+        }
+        
+        BF_NodeGroup.prototype = createPrototype(BF_NodeGroup, BF_Node);
+        
         function BF_Init() {
         }
 
@@ -82,7 +93,7 @@
         }
 
 
-        BF_FullLoop.prototype = createPrototype(BF_FullLoop, BF_Node);
+        BF_FullLoop.prototype = createPrototype(BF_FullLoop, BF_NodeGroup);
         function BF_SetCurrentCell(by) {
             this.by = by | 0;
         }
@@ -105,10 +116,19 @@
         function BF_Custom(string) {
             this._string = string;
         }
-
+        
+        function BF_If(){
+            this.instructions = [];
+        }
+        BF_If.prototype = createPrototype(BF_If, BF_NodeGroup);
+        
+        function BF_SetPointer(val) {
+            this.val = val|0;
+        }
+        BF_SetPointer.prototype = createPrototype(BF_SetPointer, BF_Node);
 
         BF_Init.prototype.toString = function() {
-            return 'heap = heap || []; \nvar pointer = 0; ' + commented(this.comments);
+            return 'heap = heap || []; \n var pointer;' + commented(this.comments);
         };
 
         BF_NullNode.prototype.toString = function() {
@@ -143,31 +163,48 @@
         BF_FullLoop.prototype.toString = function() {
             return (new BF_LoopStart()) +'\n'+ this.instructions.join('\n') + BF_LoopEnd.prototype.toString.call(this);
         };
-        BF_FullLoop.prototype.filter = function(filterFunc) {
+        
+        BF_SetCurrentCell.prototype.toString = function() {
+            return 'heap[pointer|0] = ' + this.by + '; ' + this.getComments();
+        };
+
+
+        BF_SetPointer.prototype.toString = function(){
+            return 'pointer = ('+this.val+')|0; '+this.getComments();
+        };
+        
+        
+        BF_If.prototype.toString = function () {
+            var ret = 'if(heap[pointer]) { \n'+ this.instructions.join('\n') + BF_LoopEnd.prototype.toString.call(this);
+            if (this.instructions.length === 0) {
+                ret = this.getComments();
+            }
+            return ret;
+        };
+        
+        
+        BF_NodeGroup.prototype.filterIP = function(filterFunc) {
             this.instructions = this.instructions.filter(filterFunc);
         };
-        BF_FullLoop.prototype.add = function(toAdd) {
+        BF_NodeGroup.prototype.add = function(toAdd) {
             this.instructions.push(toAdd);
         };
-        BF_FullLoop.prototype.map = function(mapFunc) {
+        BF_NodeGroup.prototype.mapIP = function(mapFunc) {
             this.instructions = this.instructions.map(mapFunc);
         };
-        BF_FullLoop.prototype.sumMoves = function(){
+        BF_NodeGroup.prototype.sumMoves = function(){
             return this.instructions.reduce(function(sum,el){
                 if (el instanceof BF_Move) {
                     sum += el.by;
                 }
-                if (el instanceof BF_FullLoop) {
-                    //sum += el.sumMoves();
+                if (el instanceof BF_NodeGroup) {
+                    sum += el.sumMoves();
                 }
                 return sum;
             },0);
         };
         
         
-        BF_SetCurrentCell.prototype.toString = function() {
-            return 'heap[pointer|0] = ' + this.by + '; ' + this.getComments();
-        };
 
         BF_Custom.prototype = createPrototype(BF_Custom, BF_Node);
         BF_Custom.prototype.toString = function() {
@@ -192,7 +229,7 @@
         };
 
         Najtingalo.parseTokens = function parseBF(string) {
-            var parsed = [new BF_Init()];
+            var parsed = [new BF_Init(), new BF_SetPointer(0)];
             string = [].slice.call(string);
             var character;
             var reachedFirstMeaningful = false;
@@ -240,6 +277,22 @@
             function isUsefulToken(token) {
                 return !(token instanceof BF_NullNode) && !token.toRemove;
             }
+            function tokensReplace(list, toReplace, newNode) {
+                var i;
+                if (list instanceof BF_NodeGroup) {
+                    list = list.instructions;
+                }
+                
+                for(i =0; i < list.length; i++) {
+                    if (list[i] === toReplace) {
+                        list[i] = newNode;
+                    }
+                    else if (list[i] instanceof BF_NodeGroup) {
+                        tokensReplace(list[i]);
+                    }
+                }
+                return list;
+            }
             if (level >= 2) {
                 newTokens = newTokens.map(function(el, i, arr) {
                     var nextEl = arr[i + 1] || new BF_NullNode();
@@ -253,7 +306,6 @@
                     }
                     return el;
                 }).filter(isUsefulToken);
-                mapPositions(newTokens);
             }
             if (level >= 2) {
                 newTokens = newTokens.map(function(el, i, arr) {
@@ -266,7 +318,6 @@
                     }
                     return el;
                 }).filter(isUsefulToken);
-                mapPositions(newTokens);
             }
             
             if (level >= 1) {
@@ -275,7 +326,6 @@
                         return el.by !== 0;
                     return true;
                 });
-                mapPositions(newTokens);
             }
             function findMatchingBracketFromRight(rightBracket,i,arr){
                 var el;
@@ -291,7 +341,7 @@
                 }
                 throw new RangeError('No matching bracket!');
             }
-            if (level >= 3) {
+            if (level >= 3) { // LoopStart + LoopEnd nodes to FullLoop
                 newTokens.forEach(function(el,i,arr){
                     var nextEl = arr[i + 1] || new BF_NullNode();
                     var prevEl = arr[i - 1] || new BF_NullNode();
@@ -309,7 +359,6 @@
                         el._nest = nest;
                     }
                 });
-                
                 mapPositions(newTokens);
                 var loopsI = [];
                 newTokens.forEach(function(el) {
@@ -342,16 +391,51 @@
                         j = 0;
                     }
                 }
-                console.log(newTokens);
+     
+            }
+            function getAllSubPrograms(list) {
+                var tokens = list.slice();
+                var subPrograms = [];
+                var i,el;
+                for (i=0; i < tokens.length; i++) {
+                    el = tokens[i];
+                    if (el instanceof BF_NodeGroup) {
+                        [].push.apply(tokens, el.instructions);
+                        subPrograms.push(el);
+                    }
+                        
+                }
+                return subPrograms;
             }
             
+            if (level >= 3) {
+                newTokens = newTokens.filter(isUsefulToken);
+                getAllSubPrograms(newTokens).forEach(function(el){
+                    el.filterIP(isUsefulToken);
+                    if (last(el.instructions) instanceof BF_SetCurrentCell && last(el.instructions).by === 0 && el.sumMoves() === 0) {
+                        var newNode = new BF_If();
+                        newNode.instructions = el.instructions.slice();
+                        newNode.instructions.pop();
+                        el._expand = newNode;
+                    }
+                        
+                })
+                newTokens = [].concat.apply([], newTokens.map(function(el) {return el.expand();}))
+                newTokens;
+            }
             return newTokens;
         };
 
         Najtingalo.toRunnable = function(string, optimisations) {
             var tokens = Najtingalo.parseTokens(string);
             tokens = Najtingalo.optimise(tokens, optimisations);
-            return Function('heap', 'print', 'getInput', tokens.join('\n'));
+            var sourceCode = tokens.join('\n');
+            try {
+                return Function('heap', 'print', 'getInput', sourceCode);
+            } catch(e) {
+                console.log(sourceCode);
+                throw e;
+            }
         };
         Najtingalo.isValid = function validateBF(string) {
             var i1 = 0;
