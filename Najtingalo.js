@@ -136,22 +136,22 @@
         };
 
         BF_Move.prototype.toString = function() {
-            return 'pointer += ' + this.by + ';' + this.getComments();
+            return 'pointer = (pointer|0 + ' + this.by + ')|0;' + this.getComments();
         };
         BF_ChangeValue.prototype.toString = function() {
-            return 'heap[pointer] = (heap[pointer]|0) + ' + this.by + ';' + this.getComments();
+            return 'heap[pointer] = ((heap[pointer|0]|0) + ' + this.by + ')|0;' + this.getComments();
         };
 
         BF_Output.prototype.toString = function() {
-            return 'print(String.fromCharCode(heap[pointer]|0));' + this.getComments();
+            return 'print(String.fromCharCode(heap[pointer|0]|0));' + this.getComments();
         };
 
         BF_Input.prototype.toString = function() {
-            return 'heap[pointer] = getInput()|0;' + this.getComments();
+            return 'heap[pointer|0] = getInput()|0;' + this.getComments();
         };
 
         BF_LoopStart.prototype.toString = function() {
-            return 'while(heap[pointer]|0) { ' + this.getComments();
+            return 'while(heap[pointer|0]|0) { ' + this.getComments();
         };
 
         BF_LoopEnd.prototype.toString = function() {
@@ -165,7 +165,7 @@
         };
         
         BF_SetCurrentCell.prototype.toString = function() {
-            return 'heap[pointer|0] = ' + this.by + '; ' + this.getComments();
+            return 'heap[pointer|0] = (' + this.by + ')|0; ' + this.getComments();
         };
 
 
