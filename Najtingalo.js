@@ -46,17 +46,18 @@
         BF_Node.prototype.getComments = function() {
             return commented(this.comments);
         };
-        
-        BF_Node.prototype.expand = function(){
+
+        BF_Node.prototype.expand = function() {
             return this._expand || this;
         };
-        
-        function BF_NodeGroup(){
-            
+
+        function BF_NodeGroup() {
+
         }
-        
+
+
         BF_NodeGroup.prototype = createPrototype(BF_NodeGroup, BF_Node);
-        
+
         function BF_Init() {
         }
 
@@ -116,15 +117,19 @@
         function BF_Custom(string) {
             this._string = string;
         }
-        
-        function BF_If(){
+
+        function BF_If() {
             this.instructions = [];
         }
+
+
         BF_If.prototype = createPrototype(BF_If, BF_NodeGroup);
-        
+
         function BF_SetPointer(val) {
-            this.val = val|0;
+            this.val = val | 0;
         }
+
+
         BF_SetPointer.prototype = createPrototype(BF_SetPointer, BF_Node);
 
         BF_Init.prototype.toString = function() {
@@ -158,31 +163,26 @@
             return '}' + this.getComments();
         };
 
-
-
         BF_FullLoop.prototype.toString = function() {
-            return (new BF_LoopStart()) +'\n'+ this.instructions.join('\n') + BF_LoopEnd.prototype.toString.call(this);
+            return (new BF_LoopStart()) + '\n' + this.instructions.join('\n') + BF_LoopEnd.prototype.toString.call(this);
         };
-        
+
         BF_SetCurrentCell.prototype.toString = function() {
             return 'heap[pointer|0] = (' + this.by + ')|0; ' + this.getComments();
         };
 
-
-        BF_SetPointer.prototype.toString = function(){
-            return 'pointer = ('+this.val+')|0; '+this.getComments();
+        BF_SetPointer.prototype.toString = function() {
+            return 'pointer = (' + this.val + ')|0; ' + this.getComments();
         };
-        
-        
-        BF_If.prototype.toString = function () {
-            var ret = 'if(heap[pointer]) { \n'+ this.instructions.join('\n') + BF_LoopEnd.prototype.toString.call(this);
+
+        BF_If.prototype.toString = function() {
+            var ret = 'if(heap[pointer]) { \n' + this.instructions.join('\n') + BF_LoopEnd.prototype.toString.call(this);
             if (this.instructions.length === 0) {
                 ret = this.getComments();
             }
             return ret;
         };
-        
-        
+
         BF_NodeGroup.prototype.filterIP = function(filterFunc) {
             this.instructions = this.instructions.filter(filterFunc);
         };
@@ -192,19 +192,17 @@
         BF_NodeGroup.prototype.mapIP = function(mapFunc) {
             this.instructions = this.instructions.map(mapFunc);
         };
-        BF_NodeGroup.prototype.sumMoves = function(){
-            return this.instructions.reduce(function(sum,el){
-                if (el instanceof BF_Move) {
+        BF_NodeGroup.prototype.sumMoves = function() {
+            return this.instructions.reduce(function(sum, el) {
+                if ( el instanceof BF_Move) {
                     sum += el.by;
                 }
-                if (el instanceof BF_NodeGroup) {
+                if ( el instanceof BF_NodeGroup) {
                     sum += el.sumMoves();
                 }
                 return sum;
-            },0);
+            }, 0);
         };
-        
-        
 
         BF_Custom.prototype = createPrototype(BF_Custom, BF_Node);
         BF_Custom.prototype.toString = function() {
@@ -248,169 +246,164 @@
             return parsed;
         };
 
-        Najtingalo.optimise = function(tokensList, level) {
-            if (!level)
-                return tokensList;
+        function mapPositions(arr) {
+            arr.forEach(function(el, i) {
+                el.position = i;
+            });
+        }
 
-            var newTokens = tokensList.slice(0);
-            function mapPositions(arr) {
-                arr.forEach(function(el,i) {
-                    el.position = i;
-                });
+        function isUsefulToken(token) {
+            return !( token instanceof BF_NullNode) && !token.toRemove;
+        }
+
+        function tokensReplace(list, toReplace, newNode) {
+            var i;
+            if ( list instanceof BF_NodeGroup) {
+                list = list.instructions;
             }
-            mapPositions(newTokens);
-            if (level >= 1) {
-                var tempList = [];
-                newTokens = newTokens.map(function(el, i, arr) {
-                    var nextEl = arr[i + 1] || new BF_NullNode();
-                    if (nextEl.constructor === el.constructor && el.by !== undefined) {
-                        nextEl.comments = el.comments + '\n' + nextEl.comments;
-                        nextEl.by += el.by;
-                        el.toRemove = true;
-                    }
-                    return el;
-                }).filter(function(el) {
-                    return !el.toRemove;
-                });
-                mapPositions(newTokens);
-            }
-            function isUsefulToken(token) {
-                return !(token instanceof BF_NullNode) && !token.toRemove;
-            }
-            function tokensReplace(list, toReplace, newNode) {
-                var i;
-                if (list instanceof BF_NodeGroup) {
-                    list = list.instructions;
+
+            for ( i = 0; i < list.length; i++) {
+                if (list[i] === toReplace) {
+                    list[i] = newNode;
+                } else if (list[i] instanceof BF_NodeGroup) {
+                    tokensReplace(list[i]);
                 }
-                
-                for(i =0; i < list.length; i++) {
-                    if (list[i] === toReplace) {
-                        list[i] = newNode;
-                    }
-                    else if (list[i] instanceof BF_NodeGroup) {
-                        tokensReplace(list[i]);
-                    }
+            }
+            return list;
+        }
+
+        function findMatchingBracketFromRight(rightBracket, i, arr) {
+            var el;
+            i--;
+            while (i >= 0) {
+                el = arr[i];
+                if (el._nest === rightBracket._nest && el instanceof BF_LoopStart) {
+                    rightBracket._matching = el;
+                    el._matching = rightBracket;
+                    return el;
                 }
-                return list;
-            }
-            if (level >= 2) {
-                newTokens = newTokens.map(function(el, i, arr) {
-                    var nextEl = arr[i + 1] || new BF_NullNode();
-                    var prevEl = arr[i - 1] || new BF_NullNode();
-                    if ( nextEl instanceof BF_LoopEnd && prevEl instanceof BF_LoopStart && el instanceof BF_ChangeValue && el.by === -1) {
-                        nextEl.toRemove = true;
-                        prevEl.toRemove = true;
-                        var ret = new BF_SetCurrentCell(0);
-                        ret.comments = [prevEl.comments, el.comments, nextEl.comments].join('\n').trim();
-                        return ret;
-                    }
-                    return el;
-                }).filter(isUsefulToken);
-            }
-            if (level >= 2) {
-                newTokens = newTokens.map(function(el, i, arr) {
-                    var nextEl = arr[i + 1] || new BF_NullNode();
-                    if ( nextEl instanceof BF_ChangeValue && el instanceof BF_SetCurrentCell) {
-                        nextEl.toRemove = true;
-                        var ret = new BF_SetCurrentCell(el.by + nextEl.by);
-                        ret.comments = [el.comments, nextEl.comments].join('\n').trim();
-                        return ret;
-                    }
-                    return el;
-                }).filter(isUsefulToken);
-            }
-            
-            if (level >= 1) {
-                newTokens = newTokens.filter(function(el) {
-                    if (el.by instanceof BF_ChangeValue || el instanceof BF_Move)
-                        return el.by !== 0;
-                    return true;
-                });
-            }
-            function findMatchingBracketFromRight(rightBracket,i,arr){
-                var el;
                 i--;
-                while (i >= 0) {
-                    el = arr[i];
-                    if (el._nest === rightBracket._nest && el instanceof BF_LoopStart) {
-                        rightBracket._matching = el;
-                        el._matching = rightBracket;
-                        return el;
-                    }
-                    i--;
-                }
-                throw new RangeError('No matching bracket!');
             }
-            if (level >= 3) { // LoopStart + LoopEnd nodes to FullLoop
-                newTokens.forEach(function(el,i,arr){
-                    var nextEl = arr[i + 1] || new BF_NullNode();
-                    var prevEl = arr[i - 1] || new BF_NullNode();
-                    var nest = prevEl._nest || 0;
-                    
-                    
-                    if (prevEl instanceof BF_LoopStart) {
-                        el._nest = nest + 1;
-                    }
-                    else if (el instanceof BF_LoopEnd) {
-                        el._nest = nest-1;
-                        findMatchingBracketFromRight(el,i,arr);
-                    }
-                    else {
-                        el._nest = nest;
-                    }
-                });
-                mapPositions(newTokens);
-                var loopsI = [];
-                newTokens.forEach(function(el) {
-                    if (el instanceof BF_LoopStart) {
-                        loopsI.push([el.position, el._matching.position]);
-                    }
-                });
-                var from,to,oldLoopStart;
-                var i = 0;
-                var k;
-                var isMinimal = false;
-                var loopNode;
-                for(j=0; j < loopsI.length; j++) {
-                    from = loopsI[i][0];
-                    to   = loopsI[i][1];
-                    isMinimal = newTokens.slice(from+1,to-1).every(function(el){
-                        return !(el instanceof BF_LoopStart);
-                    });
-                    // Minimal loop is a loop without BF_LoopStart nodes
-                    
-                    if (isMinimal && newTokens[from] instanceof BF_LoopStart) {
-                        loopNode = new BF_FullLoop();
-                        loopNode._nest = newTokens[from]._nest;
-                        newTokens[from] = loopNode;
-                        newTokens[to] = new BF_NullNode();
-                        for(k=from+1; k <= to; k++) {
-                            loopNode.add(newTokens[k]);
-                            newTokens[k] = new BF_NullNode();
-                        }
-                        j = 0;
-                    }
-                }
-     
-            }
+            throw new RangeError('No matching bracket!');
+        }
+
             function getAllSubPrograms(list) {
                 var tokens = list.slice();
                 var subPrograms = [];
-                var i,el;
-                for (i=0; i < tokens.length; i++) {
+                var i, el;
+                for ( i = 0; i < tokens.length; i++) {
                     el = tokens[i];
-                    if (el instanceof BF_NodeGroup) {
+                    if ( el instanceof BF_NodeGroup) {
                         [].push.apply(tokens, el.instructions);
                         subPrograms.push(el);
                     }
-                        
+
                 }
                 return subPrograms;
             }
-            
-            if (level >= 3) {
-                newTokens = newTokens.filter(isUsefulToken);
-                getAllSubPrograms(newTokens).forEach(function(el){
+
+        var optimisations = {};
+        optimisations.joinOperators = function(tokens) {
+            return tokens.map(function(el, i, arr) {
+                var nextEl = arr[i + 1] || new BF_NullNode();
+                if (nextEl.constructor === el.constructor && el.by !== undefined) {
+                    nextEl.comments = el.comments + '\n' + nextEl.comments;
+                    nextEl.by += el.by;
+                    el.toRemove = true;
+                }
+                return el;
+            }).filter(isUsefulToken);
+        };
+
+        optimisations.reduceZeroingCell = function(tokens) {
+            return tokens.map(function(el, i, arr) {
+                var nextEl = arr[i + 1] || new BF_NullNode();
+                var prevEl = arr[i - 1] || new BF_NullNode();
+                if ( nextEl instanceof BF_LoopEnd && prevEl instanceof BF_LoopStart && el instanceof BF_ChangeValue && el.by === -1) {
+                    nextEl.toRemove = true;
+                    prevEl.toRemove = true;
+                    var ret = new BF_SetCurrentCell(0);
+                    ret.comments = [prevEl.comments, el.comments, nextEl.comments].join('\n').trim();
+                    return ret;
+                }
+                return el;
+            }).filter(isUsefulToken);
+        };
+
+        optimisations.reduceZeroAndIncrease = function(tokens) {
+            return tokens.map(function(el, i, arr) {
+                var nextEl = arr[i + 1] || new BF_NullNode();
+                if ( nextEl instanceof BF_ChangeValue && el instanceof BF_SetCurrentCell) {
+                    nextEl.toRemove = true;
+                    var ret = new BF_SetCurrentCell(el.by + nextEl.by);
+                    ret.comments = [el.comments, nextEl.comments].join('\n').trim();
+                    return ret;
+                }
+                return el;
+            }).filter(isUsefulToken);
+        };
+
+        optimisations.removeUselessTokens = function(tokens) {
+            return tokens.filter(function(el) {
+                if (el.by instanceof BF_ChangeValue || el instanceof BF_Move) {
+                    return el.by !== 0;
+                }
+                return true;
+            });
+        };
+
+        optimisations.loopsToGroupedNodes = function(tokens) {
+            tokens.forEach(function(el, i, arr) {
+                var nextEl = arr[i + 1] || new BF_NullNode();
+                var prevEl = arr[i - 1] || new BF_NullNode();
+                var nest = prevEl._nest || 0;
+
+                if ( prevEl instanceof BF_LoopStart) {
+                    el._nest = nest + 1;
+                } else if ( el instanceof BF_LoopEnd) {
+                    el._nest = nest - 1;
+                    findMatchingBracketFromRight(el, i, arr);
+                } else {
+                    el._nest = nest;
+                }
+            });
+            mapPositions(tokens);
+            var loopsI = [];
+            tokens.forEach(function(el) {
+                if ( el instanceof BF_LoopStart) {
+                    loopsI.push([el.position, el._matching.position]);
+                }
+            });
+            var from, to, oldLoopStart;
+            var i = 0;
+            var k;
+            var isMinimal = false;
+            var loopNode;
+            for ( j = 0; j < loopsI.length; j++) {
+                from = loopsI[i][0];
+                to = loopsI[i][1];
+                isMinimal = tokens.slice(from + 1, to - 1).every(function(el) {
+                    return !( el instanceof BF_LoopStart);
+                });
+                // Minimal loop is a loop without BF_LoopStart nodes
+
+                if (isMinimal && tokens[from] instanceof BF_LoopStart) {
+                    loopNode = new BF_FullLoop();
+                    loopNode._nest = tokens[from]._nest;
+                    tokens[from] = loopNode;
+                    tokens[to] = new BF_NullNode();
+                    for ( k = from + 1; k <= to; k++) {
+                        loopNode.add(tokens[k]);
+                        tokens[k] = new BF_NullNode();
+                    }
+                    j = 0;
+                }
+            }
+            return tokens;
+        };
+        optimisations.createIfNodes = function(tokens) {
+                tokens = tokens.filter(isUsefulToken);
+                getAllSubPrograms(tokens).forEach(function(el) {
                     el.filterIP(isUsefulToken);
                     if (last(el.instructions) instanceof BF_SetCurrentCell && last(el.instructions).by === 0 && el.sumMoves() === 0) {
                         var newNode = new BF_If();
@@ -418,10 +411,43 @@
                         newNode.instructions.pop();
                         el._expand = newNode;
                     }
-                        
+
                 })
-                newTokens = [].concat.apply([], newTokens.map(function(el) {return el.expand();}))
-                newTokens;
+                tokens = [].concat.apply([], tokens.map(function(el) {
+                    return el.expand();
+                }));
+                return tokens;
+        };
+
+
+        Najtingalo.optimise = function(tokensList, level) {
+            if (!level)
+                return tokensList;
+
+            var newTokens = tokensList.slice(0);
+
+            mapPositions(newTokens);
+            if (level >= 1) {
+                newTokens = optimisations.joinOperators(newTokens);
+                mapPositions(newTokens);
+            }
+
+            if (level >= 2) {
+                newTokens = optimisations.reduceZeroingCell(newTokens);
+                newTokens = optimisations.reduceZeroAndIncrease(newTokens);
+                mapPositions(newTokens);
+            }
+
+            if (level >= 1) {
+                newTokens = optimisations.removeUselessTokens(newTokens);
+            }
+
+            if (level >= 3) {// LoopStart + LoopEnd nodes to FullLoop
+                newTokens = optimisations.loopsToGroupedNodes(newTokens);
+            }
+
+            if (level >= 3) {
+                newTokens = optimisations.createIfNodes(newTokens);
             }
             return newTokens;
         };
