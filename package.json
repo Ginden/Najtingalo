@@ -1,10 +1,13 @@
 {
   "name": "najtingalo",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "Najtingalo (esperanto: nightingale) is a Brainfuck to JavaScript optimising transcompiler.",
   "main": "Najtingalo.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack && cp dist/Najtingalo.js docs/",
+    "test": "mocha test/",
+    "coverage": "istanbul cover node_modules/.bin/_mocha -- -- -u exports -R spec test/**/*",
+    "prepublish": "npm run build && npm test"
   },
   "repository": {
     "type": "git",
@@ -22,5 +25,12 @@
   "bugs": {
     "url": "https://github.com/Ginden/Najtingalo/issues"
   },
-  "homepage": "https://github.com/Ginden/Najtingalo"
+  "homepage": "https://github.com/Ginden/Najtingalo",
+  "devDependencies": {
+    "babili-webpack-plugin": "0.0.11",
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0",
+    "webpack": "^2.3.2"
+  }
 }
